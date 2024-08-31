@@ -52,13 +52,6 @@ def get_dttm( input_file):
     else:
         return None
 
-def load_dog(c, aid):
-    c.execute('SELECT name, breed, age FROM dogs WHERE id = ?', (aid,))
-    row = c.fetchone()
-    if row is None:
-        return None
-    return {'name': row[0], 'breed': row[1], 'age': row[2]}
-
 def store_dog(c, aid, obj, fdate):
     try:
         age = age_to_years(obj['age'])
