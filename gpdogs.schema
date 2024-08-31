@@ -1,0 +1,10 @@
+CREATE TABLE dogpics (id, date_added, photo_fname, local_fname);
+CREATE TABLE name_change(id not null, old_name, new_name, date_mod);
+CREATE TABLE dogs(id primary key not null, name, age, date_added, date_adopted, date_proc, status, breed, sex, weight, href, photoUrl, notes);
+CREATE TABLE file_proc(fname primary key not null, date_proc, err_msg);
+CREATE TABLE load_hist(id not null, proc_date not null);
+CREATE VIEW active_dogs as select id,name,age,date_added,breed,sex,photoUrl from dogs where date_proc = (select max(date_proc) from file_proc)
+/* active_dogs(id,name,age,date_added,breed,sex,photoUrl) */;
+CREATE VIEW dog_names as select d.id, iif(nh is null, d.name, d.name || ' <- ' || nh) AS NAMES from dogs as D left outer join (select id, group_concat(old_name, ' <- ') as NH from (select id, old_name from name_change order by id, date_mod desc) group by id) as nc on nc.id = d.id
+/* dog_names(id,NAMES) */;
+CREATE TRIGGER name_trg after update of name on dogs when new.name != old.name begin insert into name_change values (old.id, old.name, new.name, new.date_proc); END;
