@@ -14,7 +14,15 @@ div.sexbreed {
     white-space: normal;
 }
 
-.title {
-    font-size: 1.5em;
+h1 {
+    font-family: Arial;
     font-weight: bold;
+    color: #f37321;
+}
+
+h2 {
+    font-family: Arial;
+    font-weight: normal;
+    color: white;
+    background-color: #2e4057;
 }

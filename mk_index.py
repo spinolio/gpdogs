@@ -7,25 +7,22 @@ import json
 import sys
 import re
 
-# Compile regular expression to extract jpg file name
-jpg_re = re.compile(r'\b[A-Za-z0-9-]+\.(?:jpg|gif)$')
-
 dogs = dict()
 sections = list()
 
-def active_handler(row, photoUrl):
-    return '<img src="{}" width="300" alt="{}"><br><a href="{}">{}</a> - {} year(s)<div class="sexbreed">{} - {}</div>\n'.format(photoUrl, row['name'], row['href'], row['name'], row['age'], row['sex'], row['breed'] )
+def active_handler(row, photo):
+    return '<img src="{}" width="300" alt="{}"><br><a href="{}">{}</a> - {} year(s)<div class="sexbreed">{} - {}</div>\n'.format(photo, row['name'], row['href'], row['name'], row['age'], row['sex'], row['breed'] )
 
-def gone_handler(row, photoUrl):
-    return '<img src="{}" width="300" alt="{}"><br>{} - {} year(s)<div class="sexbreed">{} - {}</div>Adopted: {}\n'.format(photoUrl, row['name'], row['name'], row['age'], row['sex'], row['breed'], row['date_adopted'])
+def gone_handler(row, photo):
+    return '<img src="{}" width="300" alt="{}"><br>{} - {} year(s)<div class="sexbreed">{} - {}</div>Adopted: {}\n'.format(photo, row['name'], row['name'], row['age'], row['sex'], row['breed'], row['date_adopted'])
 
 
 sections.append(('Adoptable Dogs - Recently Added', active_handler,
-                 "select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photoUrl, href from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_proc = (select max(date_proc) from file_proc) and julianday(date_added) >= (julianday()-14) order by name"))
+                 "select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photo, href from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_proc = (select max(date_proc) from file_proc) and julianday(date_added) >= (julianday()-14) order by name"))
 sections.append(('Adoptable Dogs - Classics!', active_handler,
-                 "select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photoUrl, href from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_proc = (select max(date_proc) from file_proc)  and julianday(date_added) < (julianday()-14)order by name"))
+                 "select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photo, href from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_proc = (select max(date_proc) from file_proc)  and julianday(date_added) < (julianday()-14)order by name"))
 sections.append(('Recent Adoptions', gone_handler,
-"select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photoUrl, date_adopted from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_adopted > strftime('%Y-%m-%d %H:%M', julianday()-14) AND d.date_proc < (select max(date_proc) from file_proc) order by date_adopted desc, name"))
+"select iif(c.old_name is NULL, d.name, d.name || ' (' || c.old_name ||')') AS NAME, sex, breed, round(age,1) AS AGE, photo, date_adopted from dogs AS D left outer join name_change AS C ON d.id = c.id  where d.date_adopted > strftime('%Y-%m-%d %H:%M', julianday()-14) AND d.date_proc < (select max(date_proc) from file_proc) order by date_adopted desc, name"))
 
 
 conn = sqlite3.connect('gpdogs.db')
@@ -47,13 +44,9 @@ with open('index.html', 'w') as f:
         res = conn.execute(query)
         row = res.fetchone()
         while row is not None:
-            m = re.search(jpg_re, row['photoUrl'])
-            if m:
-                photoUrl = 'pics/{}'.format(m.group(0))
-            else:
-                photoUrl = 'pics/Photo-Not-Available-dog.gif'
             f.write('<div class="dogbox">\n')
-            f.write(handler(row, photoUrl))
+            photo = 'pics/{}'.format(row['photo'])
+            f.write(handler(row, photo))
             f.write('</div>\n')
             row = res.fetchone()
         f.write('</section>\n')

@@ -32,8 +32,8 @@ async function fetchHTML(url) {
             });
         });
 
-        fs.writeFileSync('./output/animals.json', JSON.stringify(animals, null, 2), 'utf8');
-        console.log('Animal data saved to ./output/animals.json');
+        fs.writeFileSync('./infiles/animals.json', JSON.stringify(animals, null, 2), 'utf8');
+        console.log('Animal data saved to ./infiles/animals.json');
     } catch (error) {
         console.error('Error fetching HTML:', error);
     }
